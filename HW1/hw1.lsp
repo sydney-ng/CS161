@@ -1,22 +1,25 @@
 
-(defun TREE-CONTAINS (n TREE)
-	(if (atom car(TREE)) ; if the first element is an atom 
-		(if (= car(TREE) n) ; check if that atom is equal to n
-			(t))  ; if it is, return true 
-			(NIL)	  ; else, return false 
-	)
-	(or (TREE-CONTAIINS (car(TREE)) (TREE-CONTAIINS (cdr(TREE))))) ; it's a list, recursively check each for list
-)
+(defun TREE-CONTAINS (N TREE)
+  ;(cond (and (atom TREE) (= N TREE)) )
+  (cond ((atom TREE) (if (= N TREE) (t) (nil)))))
+  		  ; if it's 1 element & element = N
+	;(print "nah"))
+	;(if (list TREE) (and (TREE-CONTAINS N car TREE ) (TREE-CONTAINS N cdr TREE)) (print "this is nothing")))
 
-(defun TREE-CONTAINS (n TREE)
-	(cond ((atom car(TREE)) 
-			(if (= car(TREE) n)
-				(t))
-				(NIL)) 
-		   ((list car(TREE)) (or (TREE-CONTAIINS (car(TREE)) (TREE-CONTAINS (cdr(TREE))))))
-		   (t (NIL))
-		  )
-) 
+;(defun TREE-CONTAINS (n TREE)
+;	(cond ((= nil car(TREE) (nil)))
+;		  ((= atom car(TREE)) 
+;			(if (= car(TREE) n)
+;				(t))
+;				(nil)) 
+;		  ((= list car(TREE)) (or (TREE-CONTAIINS (car(TREE)) (TREE-CONTAINS (cdr(TREE))))))
+;
+;)
+
+ ;(defun TREE-CONTAINS (n TREE)
+ 	;(print ("hello world"))
+ ;)
+
 
 ;(defun TREE-MIN (TREE)
 ;	(if (= atom (TREE)) 
