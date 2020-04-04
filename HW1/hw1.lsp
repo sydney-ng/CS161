@@ -1,10 +1,10 @@
-;(defun TREE-CONTAINS (N TREE)
-;  (cond ((atom TREE) (if (= N TREE) (t)) (nil))
+(defun TREE-CONTAINS (N TREE)
+  (cond ((eql nil TREE) nil)
+  		((atom TREE) (if (= N TREE) t nil))
+        (t (or (TREE-CONTAINS N (car TREE)) (TREE-CONTAINS N (cdr TREE))))
+  )
+ )
 
 (defun TREE-MIN (TREE)
 	(cond ((atom TREE) TREE)
-		 (t(TREE-MIN (car TREE)))))
-
-;(defun TREE-ORDER (TREE)
-	;()
-;)
+		  (t (TREE-MIN (car TREE)))))
