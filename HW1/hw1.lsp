@@ -8,3 +8,13 @@
 (defun TREE-MIN (TREE)
 	(cond ((atom TREE) TREE)
 		  (t (TREE-MIN (car TREE)))))
+
+(defun TREE-ORDER (TREE)
+	(cond ((atom TREE) (list TREE))
+		  (t (cons (TREE-ORDER (cadr TREE)) (cons (TREE-ORDER(car TREE)) (TREE-ORDER (cddr TREE)))))
+	)
+)
+
+; (first element -> (car TREE)
+; middle element -> (cadr TREE)
+; (rest -> (cddr TREE)
