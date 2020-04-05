@@ -33,6 +33,13 @@
 	)
 )
 
+(defun BTREE2LIST (TREE)
+	(cond ((numberp TREE) (list TREE))
+
+		  (t (cons (BTREE2LIST (car TREE)) (BTREE2LIST (cdr TREE))))
+))
+
+
 ;(defun SPLIT-LIST (L)
 ;	(cond ((evenp (length L)) (cons (SUB-LIST (L 0 2)) (SUB-LIST (L 2 2)))
 ;		  )
