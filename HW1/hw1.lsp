@@ -18,6 +18,8 @@
 	)
 )
 
+; adds a nil 
+
 (defun SUB-LIST (L START LEN)
 	(cond ((= 0 START) (if (= 0 LEN) nil (cons (car L) (SUB-LIST(cdr L) 0 (- LEN 1)))))
 		  (t (SUB-LIST (cdr L) (- START 1) LEN))
@@ -41,4 +43,26 @@
 
 (defun SPLIT-LIST (L)
 	(cond ((evenp (length L)) (let* ((split_length (/ (length L) 2))) (append (list (SUB-LIST L 0 split_length)) (list (SUB-LIST L split_length split_length)))))
-		  ((oddp (length L)) (let* ((split_length (/ (- (length L) 1) 2))) (append (list (SUB-LIST L 0 split_length)) (list (SUB-LIST L split_length (+ split_length 1))))))))
+		  ((oddp (length L)) (let* ((split_length (/ (- (length L) 1) 2))) (append (list (SUB-LIST L 0 split_length)) (list (SUB-LIST L split_length (+ split_length 1))))))
+	)
+)
+
+(defun BTREE-HEIGHT (TREE)
+	(cond ((atom TREE) 0) ; we are at the bottom, return 1 to add that element
+		  ((> (BTREE-HEIGHT (first TREE)) (BTREE-HEIGHT (second TREE))) (+ (BTREE-HEIGHT (second TREE) 1)))
+		  (t (+ (BTREE-HEIGHT (second TREE)) 1))	
+	)
+)
+
+(defun LIST2BTREE (LEAVES)
+	(cond ((= (length LEAVES) 1) (first LEAVES))
+		  ((= (length LEAVES) 2) LEAVES)
+		  (t (append (list (LIST2BTREE (first (SPLIT-LIST LEAVES)))) (list(LIST2BTREE (cadr (SPLIT-LIST LEAVES))))))
+	)
+)
+; is it okay for the tree to be right biased 
+
+
+
+
+ 
