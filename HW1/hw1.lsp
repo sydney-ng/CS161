@@ -39,17 +39,6 @@
 	)
 )
 
-
-;(defun SPLIT-LIST (L)
-;	(cond ((evenp (length L)) (cons (SUB-LIST (L 0 2)) (SUB-LIST (L 2 2)))
-;		  )
-		  ;((eql nil L) nil)
-		  ;((evenp (length L)) (cons (SUB-LIST (L 0 len)) (SUB-LIST L len len)))
-;	)
-;)
-
-
-
-; 	(cond (eql 0 START) ((if (eql 0 LEN)) nil (SUB-LIST ((cdr L) 0 (LEN-1))))
-
-
+(defun SPLIT-LIST (L)
+	(cond ((evenp (length L)) (let* ((split_length (/ (length L) 2))) (append (list (SUB-LIST L 0 split_length)) (list (SUB-LIST L split_length split_length)))))
+		  ((oddp (length L)) (let* ((split_length (/ (- (length L) 1) 2))) (append (list (SUB-LIST L 0 split_length)) (list (SUB-LIST L split_length (+ split_length 1))))))))
