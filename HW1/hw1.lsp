@@ -34,10 +34,10 @@
 )
 
 (defun BTREE2LIST (TREE)
-	(cond ((numberp TREE) (list TREE))
-
-		  (t (cons (BTREE2LIST (car TREE)) (BTREE2LIST (cdr TREE))))
-))
+	(cond ((atom TREE) (cons TREE nil))
+		  (t (append (BTREE2LIST (first TREE)) (BTREE2LIST (second TREE))))
+	)
+)
 
 
 ;(defun SPLIT-LIST (L)
