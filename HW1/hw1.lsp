@@ -12,14 +12,18 @@
 ; (first element -> (car TREE)
 ; middle element -> (cadr TREE)
 ; (rest -> (cddr TREE)
+
 (defun TREE-ORDER (TREE)
-	(cond ((atom TREE) TREE)
-		  (t (cons (TREE-ORDER (cadr TREE)) (cons (TREE-ORDER(car TREE)) (TREE-ORDER (cddr TREE)))))
+	(cond ((atom TREE) (list TREE))
+		  (t (append (TREE-ORDER (second TREE)) (TREE-ORDER (first TREE)) (TREE-ORDER (third TREE))))
 	)
-)
+) ; fix this
+; (TREE-ORDER '((1 2 3) 7 8)) || (7 2 1 NIL 3 NIL NIL 8 NIL) => what we currently get
+; (7 (2 1 NIL 3) NIL 8) ; should look like -> (7 2 1 3 8)
+; cons -> 2 args, will always return result (put first argument inside the 2nd), append does concatenation 
+
 
 ; adds a nil 
-
 (defun SUB-LIST (L START LEN)
 	(cond ((= 0 START) (if (= 0 LEN) nil (cons (car L) (SUB-LIST(cdr L) 0 (- LEN 1)))))
 		  (t (SUB-LIST (cdr L) (- START 1) LEN))
@@ -60,9 +64,6 @@
 		  (t (append (list (LIST2BTREE (first (SPLIT-LIST LEAVES)))) (list(LIST2BTREE (cadr (SPLIT-LIST LEAVES))))))
 	)
 )
-; is it okay for the tree to be right biased 
-
-
-
+; is it okay for the tree to be right biased
 
  
