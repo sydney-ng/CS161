@@ -9,18 +9,19 @@
 	(cond ((atom TREE) TREE)
 		  (t (TREE-MIN (car TREE)))))
 
-; (first element -> (car TREE)
-; middle element -> (cadr TREE)
-; (rest -> (cddr TREE)
+
 
 (defun TREE-ORDER (TREE)
 	(cond ((atom TREE) (list TREE))
 		  (t (append (TREE-ORDER (second TREE)) (TREE-ORDER (first TREE)) (TREE-ORDER (third TREE))))
 	)
-) ; fix this
-; (TREE-ORDER '((1 2 3) 7 8)) || (7 2 1 NIL 3 NIL NIL 8 NIL) => what we currently get
-; (7 (2 1 NIL 3) NIL 8) ; should look like -> (7 2 1 3 8)
-; cons -> 2 args, will always return result (put first argument inside the 2nd), append does concatenation 
+) 
+
+; Notes from TA OH: 
+	; 1. cons -> 2 args, will always return result (put first argument inside the 2nd)
+	; 	 append does concatenation 
+	; 2. don't use (first element -> (car TREE), middle element -> (cadr TREE), (rest -> (cddr TREE)
+	;    use first, second, third 
 
 
 ; adds a nil 
@@ -47,7 +48,7 @@
 
 (defun SPLIT-LIST (L)
 	(cond ((evenp (length L)) (let* ((split_length (/ (length L) 2))) (append (list (SUB-LIST L 0 split_length)) (list (SUB-LIST L split_length split_length)))))
-		  ((oddp (length L)) (let* ((split_length (/ (- (length L) 1) 2))) (append (list (SUB-LIST L 0 split_length)) (list (SUB-LIST L split_length (+ split_length 1))))))
+		  ((oddp (length L)) (let* ((split_length (/ (- (length L) 1) 2))) (append (list (SUB-LIST L 0 (+ 1 split_length))) (list (SUB-LIST L (+ split_length 1)  split_length)))))
 	)
 )
 
@@ -64,6 +65,5 @@
 		  (t (append (list (LIST2BTREE (first (SPLIT-LIST LEAVES)))) (list(LIST2BTREE (cadr (SPLIT-LIST LEAVES))))))
 	)
 )
-; is it okay for the tree to be right biased
 
  
