@@ -22,7 +22,7 @@
 	(cond ((atom TREE) TREE) ; if it's one element, return it
 		  (t (TREE-MIN (car TREE))))) ; grab first element (will always be the smallest element)
 ; test cases:
-	; (TREE-MIN '((1 2 3) 7 8)) 
+	; (TREE-MIN '((1 2 3) 7 8)) returns 1
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
