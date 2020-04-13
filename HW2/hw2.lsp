@@ -7,8 +7,8 @@
 
 (defun BFS (TREE)
 	(cond ((null TREE) nil) ; null return null 
-		  ((atom TREE) (cons TREE nil)) ; one thing, return it 
-		  (t (append (DFS (second TREE)) (DFS (first (first TREE))) (DFS (first (third TREE))) (DFS (cdr (first TREE))) (DFS (cdr (third TREE))) ))
+		  ((atom (car TREE)) (cons (car TREE) (BFS (cdr TREE)))) ; one thing, return it 
+		  (t (BFS (append (cdr TREE) (car TREE))))
 	)
 )
 
