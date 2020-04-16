@@ -184,19 +184,19 @@
 
 
 (defun goal-test (s)
-  (cond ((equal (length s) 1) (check_list_goal s)) 
-  		(t (and (check_list_goal (first s)) (goal-test (rest s)))) ; split and check the rest
-);end defun
-  )
-
-(defun check_list_goal (s)
-  (cond ((equal (length s) 1) t) 
-  (t (and (check_element_goal (first s)) (check_list_goal (rest s)))) ; split and check the rest
+  (cond ((> (length s) 1) (and (check_list_goal (car s)) (goal-test (cdr s))))
+        (t(check_list_goal (car s)))
   )
 )
 
+
+(defun check_list_goal (s)
+  (cond  ((> (length s) 1) (and (check_element_goal (car s)) (check_list_goal (cdr s)))) 
+    (t (check_element_goal (car s)))) 
+)
+
 (defun check_element_goal (s)
-  (cond ((isBlank s)t) ; blank = ok 
+  (cond ((isBlank s) t) ; blank = ok 
   		((isWall s) t) ; wall is OK 
   		((isBox s) nil) ; box = not OK 
   		((isKeeper s) nil) ; keeper = not OK 
@@ -206,6 +206,7 @@
   		(t nil) ; catch any other cases 
   )
 )
+
 
 ; EXERCISE: Modify this function to return the list of 
 ; sucessor states of s.
