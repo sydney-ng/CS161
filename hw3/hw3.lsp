@@ -227,6 +227,17 @@
 ; Any NIL result returned from try-move can be removed by cleanUpList.
 ; 
 ;
+
+(defun get-square (s r c)
+  (cond ((and (= r 0) (= c 0)) (car (car s))) ; return the value, found correct row/col
+      ((> r (- (length s) 1)) wall)
+      ((> c (- (length (first s)) 1)) wall)
+      ((not (= r 0)) (get-square (cdr S) (- r 1) c)) ; incorrect row, iterate
+      ((not (= c 0)) (get-square (cons (cdr (car S)) (cdr s)) r (- c 1))) ;get rid of the first c atoms in the first inner list
+      (t wall)
+  )
+)
+
 (defun next-states (s)
   (let* ((pos (getKeeperPosition s 0))
 	 (x (car pos))
@@ -248,8 +259,21 @@
 ; EXERCISE: Modify this function to compute the 
 ; number of misplaced boxes in s.
 ;
+
 (defun h1 (s)
-  )
+   (cond ((> (length s) 1) (+ (helper_counter_1 (car s)) (h1 (cdr s))))
+         (t(helper_counter_1 (car s)))
+))
+
+(defun helper_counter_1 (s)
+  (cond  ((> (length s) 1) (+ (helper_counter_2 (car s)) (helper_counter_1 (cdr s)))) ;check if the last number is 2
+    (t (helper_counter_2 (car s)))) ;check if the first element is 2, then run on rest of list
+)
+
+(defun helper_counter_2 (s)
+  (cond ((isBox s) 1)
+    (t 0)
+))
 
 ; EXERCISE: Change the name of this function to h<UID> where
 ; <UID> is your actual student ID number. Then, modify this 
