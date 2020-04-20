@@ -229,12 +229,21 @@
 ;
 
 (defun get-square (s r c)
-  (cond ((and (= r 0) (= c 0)) (car (car s))) ; return the value, found correct row/col
+  (cond ((and (= r 0) (= c 0)) (caar s)) ; return the value, found correct row/col
       ((> r (- (length s) 1)) wall)
       ((> c (- (length (first s)) 1)) wall)
-      ((not (= r 0)) (get-square (cdr S) (- r 1) c)) ; incorrect row, iterate
-      ((not (= c 0)) (get-square (cons (cdr (car S)) (cdr s)) r (- c 1))) ;get rid of the first c atoms in the first inner list
+      ((not (= r 0)) (get-square (cdr s) (- r 1) c)) ; incorrect row, iterate
+      ((not (= c 0)) (get-square (cons (cdar s) (cdr s)) r (- c 1))) ;get rid of the first c atoms in the first inner list
       (t wall)
+  )
+)
+
+(defun set-square (s r c v)
+    (cond ((null s) nil) ; empty state 
+          ((not (= r 0)) (cons (car s) (set-square (cdr s) (- r 1) c v))) ; incorrect row right now 
+          ((not (= c 0)) (cons (cons (caar s) (car (set-square (cons (cdar s) (cdr s)) r (- c 1) v)) ) (cdr s))) ; incorrect col right now 
+          ((and (= r 0) (= c 0)) (cons (cons v (cdar s)) (cdr s))) ; found right r/c 
+          (t nil) ; just in case we missed anything 
   )
 )
 
@@ -301,6 +310,7 @@
  | 
  |#
 ;(6)
+; top left corner is 0,0
 (setq p1 '((1 1 1 1 1 1)
 	   (1 0 3 0 0 1)
 	   (1 0 2 0 0 1)
