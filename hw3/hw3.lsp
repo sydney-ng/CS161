@@ -248,15 +248,9 @@
 )
 
 (defun next-states (s)
-  (let* ((pos (getKeeperPosition s 0))
-	 (x (car pos))
-	 (y (cadr pos))
-	 ;x and y are now the coordinate of the keeper in s.
-	 (result nil)
-	 )
-    (cleanUpList result);end
+	 (let* ((result (append (list (try-move s "left")) (list (try-move s "right")) (list (try-move s "up")) (list (try-move s "down")))))
+    (cleanUpList result));end
    );end let
-  );
 
 ; EXERCISE: Modify this function to compute the trivial 
 ; admissible heuristic.
