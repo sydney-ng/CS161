@@ -296,6 +296,41 @@
 (defun hUID (s)
   )
 
+
+(defun try-move (s d)
+        (cond ((string= d "left") (move_left s))
+              ((string= d "right") (move_right s))
+        ) ; end cond 
+      ) ; end let binding 
+
+(defun move_left (s)
+  (let* ((r (second (getKeeperPosition s 0))) (c (first (getKeeperPosition s 0))))
+    (cond ((isWall (get-square s r (- c 1))) nil) 
+          ((and (isBox (get-square s r (- c 1))) (or (isBox (get-square s r (- c 2))) (isWall (get-square s r (- c 2))))) nil) 
+          (t (if (isKeeperStar (get-square s r c)) (set-square (keeper-move-left s r c) r c star) (set-square (move_keeper_left s r c) r c blank)))
+    )
+  )
+) ; end fx 
+
+(defun move_keeper_left (s r c)
+  (if (confirm_keeper_value s r (- c 1)) (set-square (move_block_left s r c) r (- c 1) keeperstar) (set-square (move_block_left s r c) r (- c 1) keeper))
+)
+
+(defun move_block_left (s r c)
+(cond ((confirm_box_value s r (- c 1)) (set-square s r (- c 2) box)) ;move the block if applicable
+        (t s)))
+
+(defun confirm_box_value (s r c)
+  (cond ((isBox (get-square s r c)) t) 
+        ((isBoxStar (get-square s r c)) t) 
+        (t nil))
+)
+
+(defun confirm_keeper_value (s r c)
+  (cond ((isStar (get-square s r c)) t) 
+        ((isBoxStar (get-square s r c)) t) 
+        (t nil))
+)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #|
