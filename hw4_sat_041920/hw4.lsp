@@ -1,13 +1,3 @@
-(defun remove-element-xx (symbol clause)
-  (if (null-checker clause) 
-    nil
-      (if (eq (car clause) symbol) 
-        (remove-element symbol (cdr clause))
-        (append (list (car clause)) (remove-element symbol (cdr clause)))
-      )
-  )
-)
-          
 
 (defun null-checker (delta)
   (if (= (length delta) 0) 
@@ -35,16 +25,6 @@
 		  )
 	)
 )
-
-(defun remove-elem-all-xx (clause val)
-  (if (null-checker clause) 
-    nil
-    (append 
-      (list (remove-element-function-parser val (first clause) "remove-element"))
-      (remove-elem-all (rest clause) val))
-  )
-)
-
 
 (defun is-valid-cnf (cnf cur_var)
   (if (null cnf) 
