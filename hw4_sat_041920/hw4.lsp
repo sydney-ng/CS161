@@ -25,19 +25,19 @@
 	)
 )
 
-(defun is-valid-cnf (cnf cur_var)
-  (if (null cnf) 
+(defun is-valid-clause (symbol clause)
+  (if (null clause) 
     T
-    (if (remove-element-function-parser cur_var (first cnf) "remove-element") 
-      (is-valid-cnf (rest cnf) cur_var)
+    (if (remove-element-function-parser symbol (first clause) "remove-element") 
+      (is-valid-clause symbol (rest clause))
       nil 
     )
   )
 ) 
 
-(defun is-valid-removal (cnf cur_var)
-  (if (is-valid-cnf cnf cur_var)
-    (remove-element-function-parser cur_var cnf "remove-element-top-level")
+(defun is-valid-removal (clause symbol)
+  (if (is-valid-clause symbol clause)
+    (remove-element-function-parser symbol clause "remove-element-top-level")
     nil
   )
 )
@@ -53,76 +53,76 @@
 )
 
 ; Assemble output
-(defun remove-with-varh1 (cnf cur_var output_cnf)
-  (if (null-checker cnf) 
-    output_cnf
-    (if (is-in-list cur_var (first cnf))
-      (remove-with-varh1 (rest cnf) cur_var output_cnf)
-      (remove-with-varh1 (rest cnf) cur_var (append output_cnf (list (first cnf))))
+(defun remove-with-varh1 (clause symbol output_clause)
+  (if (null-checker clause) 
+    output_clause
+    (if (is-in-list symbol (first clause))
+      (remove-with-varh1 (rest clause) symbol output_clause)
+      (remove-with-varh1 (rest clause) symbol (append output_clause (list (first clause))))
     )
   )
 )
 
 
 
-(defun remove-with-var (cnf cur_var)
-  (remove-with-varh1 cnf cur_var nil)
+(defun remove-with-var (clause symbol)
+  (remove-with-varh1 clause symbol nil)
 )
 
 
-(defun process-branch (cnf cur_var)
-  (cond ((post_removal_checks cnf cur_var) nil)
-      ((null (remove-with-var cnf cur_var)) cur_var)
-      ((and (equal (remove-with-var cnf cur_var) cnf) (equal (remove-with-var cnf (- cur_var)) cnf)) cnf)
-      (t (is-valid-removal (remove-with-var cnf cur_var) (- cur_var)))  
+(defun process-branch (clause symbol)
+  (cond ((post_removal_checks clause symbol) nil)
+      ((null (remove-with-var clause symbol)) symbol)
+      ((and (equal (remove-with-var clause symbol) clause) (equal (remove-with-var clause (- symbol)) clause)) clause)
+      (t (is-valid-removal (remove-with-var clause symbol) (- symbol)))  
   )
 )
 
-(defun post_removal_checks (cnf cur_var)
-  (if (or (or (null (is-valid-removal cnf (- cur_var))) 
-      (equal (remove-with-var cnf cur_var) cnf))
-      (null-checker cnf)
+(defun post_removal_checks (clause symbol)
+  (if (or (or (null (is-valid-removal clause (- symbol))) 
+      (equal (remove-with-var clause symbol) clause))
+      (null-checker clause)
     )
       t 
       nil
   )
 )
 
-(defun smart-DFS-prechecks (cnf cur_var n)
-  (if (or (null cnf) (> cur_var n))
+(defun smart-DFS-prechecks (clause symbol n)
+  (if (or (null clause) (> symbol n))
     t
     nil)
 ) 
 
-(defun smart-DFS-mine (cnf cur_var n)
-  (cond ((smart-DFS-prechecks cnf cur_var n) nil)
+(defun smart-DFS-mine (clause symbol n)
+  (cond ((smart-DFS-prechecks clause symbol n) nil)
       ;We've reached a single clause
-      ((atom cnf) (list cnf))
+      ((atom clause) (list clause))
       ;Process the choice of taking T and the choice of taking F
-        (t ( cnf cur_var n (process-branch cnf cur_var) (process-branch cnf (- cur_var))))
+        (t ( clause symbol n (process-branch clause symbol) (process-branch clause (- symbol))))
   )
 ) 
 
-(defun check_branches (cnf cur_var n T_branch F_branch)
-  (cond ((null F_branch) (F_branch_parse cur_var (smart-DFS T_branch (+ cur_var 1) n) T_branch)) 
-      (t (T_branch_parse T_branch F_branch cur_var (smart-DFS F_branch (+ cur_var 1) n) (smart-DFS T_branch (+ cur_var 1) n)))
+(defun check_branches (clause symbol n T_branch F_branch)
+  (cond ((null F_branch) (F_branch_parse symbol (smart-DFS T_branch (+ symbol 1) n) T_branch)) 
+      (t (T_branch_parse T_branch F_branch symbol (smart-DFS F_branch (+ symbol 1) n) (smart-DFS T_branch (+ symbol 1) n)))
   )
 )
 
-(defun F_branch_parse (cur_var assnT T_branch)
+(defun F_branch_parse (symbol assnT T_branch)
   (cond ((or (null T_branch) (null assnT)) NIL) 
-      ((atom T_branch) (list cur_var))
-      (t (append (list cur_var) assnT))
+      ((atom T_branch) (list symbol))
+      (t (append (list symbol) assnT))
   ) 
 )
 
-(defun T_branch_parse (T_branch F_branch cur_var assnF assnT)
-  (cond ((atom F_branch) (list (- cur_var)))
+(defun T_branch_parse (T_branch F_branch symbol assnF assnT)
+  (cond ((atom F_branch) (list (- symbol)))
       ((null assnF) (if (null assnT) 
                   NIL
-                  (append (list cur_var) assnT))
+                  (append (list symbol) assnT))
               )
-      (t (append (list (- cur_var)) assnF))
+      (t (append (list (- symbol)) assnF))
   )
 )
 
@@ -137,28 +137,28 @@
 
 
 
-(defun smart-DFS (cnf cur_var n)
-    (cond ((smart-DFS-prechecks cnf cur_var n) nil)
+(defun smart-DFS (clause symbol n)
+    (cond ((smart-DFS-prechecks clause symbol n) nil)
 
         ;We've reached a single clause
-        ((atom cnf) (list cnf))
+        ((atom clause) (list clause))
         ;Process the choice of taking T and the choice of taking F
-        (t (go-through-branches cnf cur_var n (process-branch cnf cur_var) (process-branch cnf (- cur_var))))
+        (t (go-through-branches clause symbol n (process-branch clause symbol) (process-branch clause (- symbol))))
     )
 )
 
-(defun prune-branch (cur_var n T_branch assnT)
+(defun prune-branch (symbol n T_branch assnT)
   (cond ((or (null T_branch) (null assnT)) nil)
-        ((atom T_branch) (list cur_var))
-      (t (append (list cur_var) assnT))
+        ((atom T_branch) (list symbol))
+      (t (append (list symbol) assnT))
       )
 )
 
-(defun null-branch-parse (assnT T_branch cur_var)
+(defun null-branch-parse (assnT T_branch symbol)
   (cond ((null T_branch) nil)
-      (t (cond ((atom T_branch) (list cur_var))
+      (t (cond ((atom T_branch) (list symbol))
              (t (cond ((null assnT) nil)
-                  (t (append (list cur_var) assnT))
+                  (t (append (list symbol) assnT))
                 )
              )
 
@@ -167,20 +167,20 @@
   )
 )
 
-(defun go-through-branches (cnf cur_var n T_branch F_branch)
+(defun go-through-branches (clause symbol n T_branch F_branch)
     (if (null F_branch)
-      (null-branch-parse (smart-DFS T_branch (+ cur_var 1) n) T_branch cur_var) 
-      (null-branch-parse2 F_branch (smart-DFS F_branch (+ cur_var 1) n) (smart-DFS T_branch (+ cur_var 1) n)cur_var)
+      (null-branch-parse (smart-DFS T_branch (+ symbol 1) n) T_branch symbol) 
+      (null-branch-parse2 F_branch (smart-DFS F_branch (+ symbol 1) n) (smart-DFS T_branch (+ symbol 1) n)symbol)
          
   )
 )
 
-(defun null-branch-parse2 (F_branch assnF assnT cur_var)
-  (cond ((atom F_branch)(list (- cur_var)))
+(defun null-branch-parse2 (F_branch assnF assnT symbol)
+  (cond ((atom F_branch)(list (- symbol)))
   		(t (cond ((null assnF) (cond ((null assnT) nil)
-  									 (t (append (list cur_var) assnT)))
+  									 (t (append (list symbol) assnT)))
   								) 
-  				  (t (append (list (- cur_var)) assnF))
+  				  (t (append (list (- symbol)) assnF))
   		   )
   		)
   )
@@ -227,5 +227,4 @@
 ; Following is a helper function that combines parse-cnf and sat?
 (defun solve-cnf (filename)
   (let ((cnf (parse-cnf filename))) (sat? (first cnf) (second cnf))))
-
   
