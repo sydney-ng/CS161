@@ -32,8 +32,8 @@
 		  ((string= "clause-validity-check" type) 
 		  		(if (null clause) 
 	    			T
-			    	(if (remove-element-function-parser symbol (first clause) "prune-element") 
-			      		(top_level_validity_parser symbol (rest clause) "clause-validity-check")
+			    	(if (remove-element-function-parser symbol (car clause) "prune-element") 
+			      		(top_level_validity_parser symbol (cdr clause) "clause-validity-check")
 			      		nil)	
   				))
 	)
@@ -50,28 +50,33 @@
 )
 
 ; Assemble output
-(defun remove-with-varh1 (clause symbol output_clause)
+(defun top-level-removal-fx (clause symbol output_clause)
   (if (null-checker clause) 
     output_clause
-    (if (exists symbol (first clause))
-      (remove-with-varh1 (rest clause) symbol output_clause)
-      (remove-with-varh1 (rest clause) symbol (append output_clause (list (first clause))))
-    )
+    (continue-removing clause symbol (car clause) (cdr clause) output_clause)
+
+    
   )
 )
 
+(defun continue-removing (clause symbol clause_head clause_tail output_clause)
+	(if (exists symbol clause_head)
+      (top-level-removal-fx clause_tail symbol output_clause)
+      (top-level-removal-fx clause_tail symbol (append output_clause (list clause_head)))
+    )
+)
 
 (defun process-branch (clause symbol)
   (cond ((post_removal_checks clause symbol) nil)
-      ((null (remove-with-varh1 clause symbol nil)) symbol)
-      ((and (equal (remove-with-varh1 clause symbol nil) clause) (equal (remove-with-varh1 clause (- symbol) nil) clause)) clause)
-      (t (top_level_validity_parser (- symbol) (remove-with-varh1 clause symbol nil) "top-level-valid-check"))  
+      ((null (top-level-removal-fx clause symbol nil)) symbol)
+      ((and (equal (top-level-removal-fx clause symbol nil) clause) (equal (top-level-removal-fx clause (- symbol) nil) clause)) clause)
+      (t (top_level_validity_parser (- symbol) (top-level-removal-fx clause symbol nil) "top-level-valid-check"))  
   )
 )
 
 (defun post_removal_checks (clause symbol)
   (if (or (or (null (top_level_validity_parser (- symbol) clause "top-level-valid-check")) 
-      (equal (remove-with-varh1 clause symbol nil) clause))
+      (equal (top-level-removal-fx clause symbol nil) clause))
       (null-checker clause)
     )
       t 
