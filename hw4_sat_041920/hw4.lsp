@@ -65,12 +65,24 @@
 )
 
 (defun iterate-through-branch (symbol clause)
-  (cond ((confirm_branch_validity symbol clause) nil)
-      ((null (top-level-removal-fx symbol clause nil)) symbol)
-      ((and (equal (top-level-removal-fx symbol clause nil) clause) (equal (top-level-removal-fx (- symbol) clause nil) clause)) clause)
-      (t (top_level_validity_parser (- symbol) (top-level-removal-fx symbol clause nil) "top-level-valid-check"))  
+  (if (confirm_branch_validity symbol clause) 
+  		nil
+  		(if (null (top-level-removal-fx symbol clause nil))
+  			symbol
+  			(begin-removal symbol (- symbol) clause 
+  						    (top-level-removal-fx symbol clause nil) 
+  						    (top-level-removal-fx (- symbol) clause nil))
+  		)
   )
 )
+
+(defun begin-removal (symbol neg_symbol clause remove-pos-sym remove-neg-sym)
+	 (if (and (equal remove-pos-sym clause) (equal remove-neg-sym clause)) 
+	 	 clause
+         (top_level_validity_parser neg_symbol remove-pos-sym "top-level-valid-check")
+      )  
+)
+
 
 (defun confirm_branch_validity (symbol clause)
   (if (or (or (null (top_level_validity_parser (- symbol) clause "top-level-valid-check")) 
