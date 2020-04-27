@@ -5,21 +5,20 @@
 )
 
 (defun remove-element-function-parser (symbol clause fx-name)
-	(cond ((string= fx-name "remove-element") 
+	(cond ((string= fx-name "prune-element") 
 						(if (null-checker clause) 
 						    nil
 						      (if (eq (car clause) symbol) 
-						        (remove-element-function-parser symbol (cdr clause) "remove-element")
-						        (append (list (car clause)) (remove-element-function-parser symbol (cdr clause) "remove-element"))
+						        (remove-element-function-parser symbol (cdr clause) "prune-element")
+						        (append (list (car clause)) (remove-element-function-parser symbol (cdr clause) "prune-element"))
 						      )
 						  )
 						)
 		  ((string= fx-name "remove-element-top-level") 
 		  				(if (null-checker clause) 
 						    nil
-						    (append 
-						      (list (remove-element-function-parser symbol (first clause) "remove-element"))
-						      (remove-element-function-parser symbol (rest clause)"remove-element-top-level"))
+						    (append (list (remove-element-function-parser symbol (car clause) "prune-element"))
+						      		(remove-element-function-parser symbol (cdr clause)"remove-element-top-level"))
 						 )
 		  )
 	)
@@ -33,7 +32,7 @@
 		  ((string= "clause-validity-check" type) 
 		  		(if (null clause) 
 	    			T
-			    	(if (remove-element-function-parser symbol (first clause) "remove-element") 
+			    	(if (remove-element-function-parser symbol (first clause) "prune-element") 
 			      		(top_level_validity_parser symbol (rest clause) "clause-validity-check")
 			      		nil)	
   				))
