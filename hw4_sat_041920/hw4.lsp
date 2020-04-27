@@ -94,12 +94,12 @@
 		nil)
 ) 
 
-(defun smart-DFS (cnf cur_var n)
+(defun smart-DFS-mine (cnf cur_var n)
 	(cond ((smart-DFS-prechecks cnf cur_var n) nil)
 		  ;We've reached a single clause
 		  ((atom cnf) (list cnf))
 		  ;Process the choice of taking T and the choice of taking F
-	  	  (t (check_branches cnf cur_var n (process-branch cnf cur_var) (process-branch cnf (- cur_var))))
+	  	  (t ( cnf cur_var n (process-branch cnf cur_var) (process-branch cnf (- cur_var))))
 	)
 ) 
 
@@ -134,6 +134,75 @@
 	)
 )
 
+
+
+
+(defun smart-DFS (cnf cur_var n)
+    (cond ((smart-DFS-prechecks cnf cur_var n) nil)
+
+        ;We've reached a single clause
+        ((atom cnf) (list cnf))
+        ;Process the choice of taking T and the choice of taking F
+        (t (go-through-branches cnf cur_var n (process-branch cnf cur_var) (process-branch cnf (- cur_var))))
+    )
+)
+
+(defun prune-branch (cur_var n T_branch assnT)
+  (cond ((or (null T_branch) (null assnT)) nil)
+    	  ((atom T_branch) (list cur_var))
+		  (t (append (list cur_var) assnT))
+      )
+)
+
+(defun null-branch-parse (assnT T_branch cur_var)
+	(cond ((null T_branch) nil)
+		  (t (cond ((atom T_branch) (list cur_var))
+		  		   (t (cond ((null assnT) nil)
+		  		   			(t (append (list cur_var) assnT))
+		  		   	  )
+		  		   )
+
+		  	  )
+		  )
+	)
+)
+
+(defun go-through-branches (cnf cur_var n T_branch F_branch)
+  	(if (null F_branch)
+  		(null-branch-parse (smart-DFS T_branch (+ cur_var 1) n) T_branch cur_var) 
+	  	(null-branch-parse2 F_branch (smart-DFS F_branch (+ cur_var 1) n) (smart-DFS T_branch (+ cur_var 1) n)cur_var)
+	  	   
+	)
+)
+
+(defun null-branch-parse2 (F_branch assnF assnT cur_var)
+	(cond ((atom F_branch) (list (- cur_var)))
+		  (t (cond ((null assnF) (if (null assnT) 
+							  	 	  nil
+							  	 	  (append (list cur_var) assnT)))
+		  		(t (append (list (- cur_var)) assnF))))
+	  	 
+	)
+)
+
+(defun sat? (n delta)
+  (process-solution n 1 delta)
+)
+
+(defun process-solution (n init delta)
+  (let* ((pre_proc_sol (smart-DFS delta init n))
+      (num_remaining (- n (length pre_proc_sol)))
+
+    )
+    (cond 
+      ((equal (length pre_proc_sol) 0) NIL)
+      (T
+        (populate-sol pre_proc_sol num_remaining)
+      )
+    )
+
+  )
+)
 
 
 (defun split-line (line)
