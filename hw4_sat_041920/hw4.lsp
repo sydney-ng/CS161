@@ -1,4 +1,4 @@
-(defun remove-element (symbol clause)
+(defun remove-element-xx (symbol clause)
   (if (null-checker clause) 
     nil
       (if (eq (car clause) symbol) 
@@ -15,12 +15,32 @@
       nil)
 )
 
+(defun remove-element-function-parser (symbol clause fx-name)
+	(cond ((string= fx-name "remove-element") 
+						(if (null-checker clause) 
+						    nil
+						      (if (eq (car clause) symbol) 
+						        (remove-element-function-parser symbol (cdr clause) "remove-element")
+						        (append (list (car clause)) (remove-element-function-parser symbol (cdr clause) "remove-element"))
+						      )
+						  )
+						)
+		  ((string= fx-name "remove-element-top-level") 
+		  				(if (null-checker clause) 
+						    nil
+						    (append 
+						      (list (remove-element-function-parser symbol (first clause) "remove-element"))
+						      (remove-element-function-parser symbol (rest clause)"remove-element-top-level"))
+						 )
+		  )
+	)
+)
 
-(defun remove-elem-all (clause val)
+(defun remove-elem-all-xx (clause val)
   (if (null-checker clause) 
     nil
     (append 
-      (list (remove-element val (first clause)))
+      (list (remove-element-function-parser val (first clause) "remove-element"))
       (remove-elem-all (rest clause) val))
   )
 )
@@ -29,7 +49,7 @@
 (defun is-valid-cnf (cnf cur_var)
   (if (null cnf) 
     T
-    (if (remove-element cur_var (first cnf)) 
+    (if (remove-element-function-parser cur_var (first cnf) "remove-element") 
       (is-valid-cnf (rest cnf) cur_var)
       nil 
     )
@@ -38,7 +58,7 @@
 
 (defun is-valid-removal (cnf cur_var)
   (if (is-valid-cnf cnf cur_var)
-    (remove-elem-all cnf cur_var)
+    (remove-element-function-parser cur_var cnf "remove-element-top-level")
     nil
   )
 )
