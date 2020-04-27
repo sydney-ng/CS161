@@ -1,4 +1,3 @@
-
 (defun null-checker (delta)
   (if (= (length delta) 0) 
       t 
@@ -65,8 +64,9 @@
 )
 
 
+
 (defun remove-with-var (cnf cur_var)
-  (remove-with-varh1 cnf cur_var NIL)
+  (remove-with-varh1 cnf cur_var nil)
 )
 
 
@@ -198,13 +198,16 @@
 )
 
 (defun do-work (pre_proc_sol n)
-	(let* ((num_remaining (- n (length pre_proc_sol))))
-		(if (null-checker pre_proc_sol)
-			nil 
-			(populate-sol pre_proc_sol num_remaining)
-		)        
-	)
+	
+	(if (null-checker pre_proc_sol)
+		nil 
+		(do-work-2 pre_proc_sol (- n (length pre_proc_sol)))
+	)       
 
+)
+
+(defun do-work-2 (pre_proc_sol num_remaining)
+	(populate-sol pre_proc_sol num_remaining)
 )
 
 (defun split-line (line)
