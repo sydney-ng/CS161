@@ -53,26 +53,26 @@
 (defun top-level-removal-fx (symbol clause output_clause)
   (if (null-checker clause) 
     output_clause
-    (continue-removing clause symbol (car clause) (cdr clause) output_clause)
+    (continue-removing symbol clause (car clause) (cdr clause) output_clause)
   )
 )
 
-(defun continue-removing (clause symbol clause_head clause_tail output_clause)
+(defun continue-removing (symbol clause clause_head clause_tail output_clause)
 	(if (exists symbol clause_head)
       (top-level-removal-fx  symbol clause_tail output_clause)
       (top-level-removal-fx symbol clause_tail (append output_clause (list clause_head)))
     )
 )
 
-(defun process-branch (clause symbol)
-  (cond ((post_removal_checks clause symbol) nil)
+(defun iterate-through-branch (symbol clause)
+  (cond ((confirm_branch_validity symbol clause) nil)
       ((null (top-level-removal-fx symbol clause nil)) symbol)
       ((and (equal (top-level-removal-fx symbol clause nil) clause) (equal (top-level-removal-fx (- symbol) clause nil) clause)) clause)
       (t (top_level_validity_parser (- symbol) (top-level-removal-fx symbol clause nil) "top-level-valid-check"))  
   )
 )
 
-(defun post_removal_checks (clause symbol)
+(defun confirm_branch_validity (symbol clause)
   (if (or (or (null (top_level_validity_parser (- symbol) clause "top-level-valid-check")) 
       (equal (top-level-removal-fx symbol clause nil) clause))
       (null-checker clause)
@@ -101,7 +101,7 @@
         ;We've reached a single clause
         ((atom clause) (list clause))
         ;Process the choice of taking T and the choice of taking F
-        (t (go-through-branches clause symbol n (process-branch clause symbol) (process-branch clause (- symbol))))
+        (t (go-through-branches clause symbol n (iterate-through-branch symbol clause) (iterate-through-branch (- symbol) clause)))
     )
 )
 
