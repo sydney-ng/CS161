@@ -40,12 +40,12 @@
 	)
 )
 
-(defun is-in-list (symbol clause)
+(defun exists (symbol clause)
   (if (null-checker clause) 
     nil 
     (if (= (first clause) symbol) 
         t 
-        (is-in-list symbol (rest clause))
+        (exists symbol (rest clause))
     )
   )
 )
@@ -54,29 +54,25 @@
 (defun remove-with-varh1 (clause symbol output_clause)
   (if (null-checker clause) 
     output_clause
-    (if (is-in-list symbol (first clause))
+    (if (exists symbol (first clause))
       (remove-with-varh1 (rest clause) symbol output_clause)
       (remove-with-varh1 (rest clause) symbol (append output_clause (list (first clause))))
     )
   )
 )
 
-(defun remove-with-var (clause symbol)
-  (remove-with-varh1 clause symbol nil)
-)
-
 
 (defun process-branch (clause symbol)
   (cond ((post_removal_checks clause symbol) nil)
-      ((null (remove-with-var clause symbol)) symbol)
-      ((and (equal (remove-with-var clause symbol) clause) (equal (remove-with-var clause (- symbol)) clause)) clause)
-      (t (top_level_validity_parser (- symbol) (remove-with-var clause symbol) "top-level-valid-check"))  
+      ((null (remove-with-varh1 clause symbol nil)) symbol)
+      ((and (equal (remove-with-varh1 clause symbol nil) clause) (equal (remove-with-varh1 clause (- symbol) nil) clause)) clause)
+      (t (top_level_validity_parser (- symbol) (remove-with-varh1 clause symbol nil) "top-level-valid-check"))  
   )
 )
 
 (defun post_removal_checks (clause symbol)
   (if (or (or (null (top_level_validity_parser (- symbol) clause "top-level-valid-check")) 
-      (equal (remove-with-var clause symbol) clause))
+      (equal (remove-with-varh1 clause symbol nil) clause))
       (null-checker clause)
     )
       t 
