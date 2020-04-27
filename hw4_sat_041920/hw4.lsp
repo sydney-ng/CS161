@@ -25,21 +25,19 @@
 	)
 )
 
-(defun is-valid-clause (symbol clause)
-  (if (null clause) 
-    T
-    (if (remove-element-function-parser symbol (first clause) "remove-element") 
-      (is-valid-clause symbol (rest clause))
-      nil 
-    )
-  )
-) 
-
-(defun is-valid-removal (clause symbol)
-  (if (is-valid-clause symbol clause)
-    (remove-element-function-parser symbol clause "remove-element-top-level")
-    nil
-  )
+(defun top_level_validity_parser (symbol clause type)
+	(cond ((string= "top-level-valid-check" type) 
+				(if (top_level_validity_parser symbol clause "clause-validity-check")
+			    (remove-element-function-parser symbol clause "remove-element-top-level")
+			    nil))
+		  ((string= "clause-validity-check" type) 
+		  		(if (null clause) 
+	    			T
+			    	(if (remove-element-function-parser symbol (first clause) "remove-element") 
+			      		(top_level_validity_parser symbol (rest clause) "clause-validity-check")
+			      		nil)	
+  				))
+	)
 )
 
 (defun is-in-list (symbol clause)
@@ -63,8 +61,6 @@
   )
 )
 
-
-
 (defun remove-with-var (clause symbol)
   (remove-with-varh1 clause symbol nil)
 )
@@ -74,12 +70,12 @@
   (cond ((post_removal_checks clause symbol) nil)
       ((null (remove-with-var clause symbol)) symbol)
       ((and (equal (remove-with-var clause symbol) clause) (equal (remove-with-var clause (- symbol)) clause)) clause)
-      (t (is-valid-removal (remove-with-var clause symbol) (- symbol)))  
+      (t (top_level_validity_parser (- symbol) (remove-with-var clause symbol) "top-level-valid-check"))  
   )
 )
 
 (defun post_removal_checks (clause symbol)
-  (if (or (or (null (is-valid-removal clause (- symbol))) 
+  (if (or (or (null (top_level_validity_parser (- symbol) clause "top-level-valid-check")) 
       (equal (remove-with-var clause symbol) clause))
       (null-checker clause)
     )
@@ -94,48 +90,12 @@
     nil)
 ) 
 
-(defun smart-DFS-mine (clause symbol n)
-  (cond ((smart-DFS-prechecks clause symbol n) nil)
-      ;We've reached a single clause
-      ((atom clause) (list clause))
-      ;Process the choice of taking T and the choice of taking F
-        (t ( clause symbol n (process-branch clause symbol) (process-branch clause (- symbol))))
-  )
-) 
-
-(defun check_branches (clause symbol n T_branch F_branch)
-  (cond ((null F_branch) (F_branch_parse symbol (smart-DFS T_branch (+ symbol 1) n) T_branch)) 
-      (t (T_branch_parse T_branch F_branch symbol (smart-DFS F_branch (+ symbol 1) n) (smart-DFS T_branch (+ symbol 1) n)))
-  )
-)
-
-(defun F_branch_parse (symbol assnT T_branch)
-  (cond ((or (null T_branch) (null assnT)) NIL) 
-      ((atom T_branch) (list symbol))
-      (t (append (list symbol) assnT))
-  ) 
-)
-
-(defun T_branch_parse (T_branch F_branch symbol assnF assnT)
-  (cond ((atom F_branch) (list (- symbol)))
-      ((null assnF) (if (null assnT) 
-                  NIL
-                  (append (list symbol) assnT))
-              )
-      (t (append (list (- symbol)) assnF))
-  )
-)
-
-
 (defun populate-sol (cur_sol vars_remaining)
   (if (= vars_remaining 0) 
     cur_sol
     (populate-sol (append cur_sol (list (+ (length cur_sol) 1))) (- vars_remaining 1))
   )
 )
-
-
-
 
 (defun smart-DFS (clause symbol n)
     (cond ((smart-DFS-prechecks clause symbol n) nil)
