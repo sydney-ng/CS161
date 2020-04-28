@@ -55,21 +55,25 @@
   )
 )
 
-; Assemble output
+; is the parent function that will send the clauses to be parsed for removal of target element 
 (defun top-level-removal-fx (symbol clause output_clause)
-  (if (null-checker clause) 
+  (if (null-checker clause) ; if there is nothing in the clause, send output 
     output_clause
+    ; else send it to be parsed 
     (continue-removing symbol clause (car clause) (cdr clause) output_clause)
   )
 )
 
+; separates head and tail of list to make it easy for parsing 
 (defun continue-removing (symbol clause clause_head clause_tail output_clause)
-	(if (exists symbol clause_head)
-      (top-level-removal-fx  symbol clause_tail output_clause)
-      (top-level-removal-fx symbol clause_tail (append output_clause (list clause_head)))
+	(if (exists symbol clause_head) ; check if clause head is target 
+      (top-level-removal-fx symbol clause_tail output_clause) ; yes, so try same w/ tail 
+      (top-level-removal-fx symbol clause_tail (append output_clause (list clause_head))) 
+      ; else add head and do rest for tail 
     )
 )
 
+; parent level function that will try 
 (defun iterate-through-branch (symbol clause)
   (if (confirm_branch_validity symbol clause) 
   		nil
@@ -92,52 +96,48 @@
       )  
 )
 
-
+; the element was removed, can it still work? return t if yes, nil if no 
 (defun confirm_branch_validity (symbol clause)
-  (if (or (or (null (top_level_validity_parser (- symbol) clause "top-level-valid-check")) 
-      (equal (top-level-removal-fx symbol clause nil) clause))
-      (null-checker clause)
+  (if (or (or (null (top_level_validity_parser (- symbol) clause "top-level-valid-check"))  ; results in null clause
+      (equal (top-level-removal-fx symbol clause nil) clause)) ; removing symbol didn't make a diff 
+      (null-checker clause) ; null clause 
     )
       t 
       nil
   )
 )
 
+; before parsing, check validity of clause 
 (defun SAT-parser-prechecks (clause symbol n)
   (if (or (null clause) (> symbol n))
     t
     nil)
 ) 
 
+; see how many symbols are left to parse through 
 (defun answer-generator (cur_sol vars_remaining)
-  (if (= vars_remaining 0) 
+  (if (= vars_remaining 0) ; we are done! 
     cur_sol
+    ; not done yet, keep going, decrement number to parse left by one and add what we have
     (answer-generator (append cur_sol (list (+ (length cur_sol) 1))) (- vars_remaining 1))
   )
 )
 
+; parent function that will check what level of clauses we are on 
 (defun SAT-parser (clause symbol n)
     (cond ((SAT-parser-prechecks clause symbol n) nil)
-
-        ;We've reached a single clause
-        ((atom clause) (list clause))
-        ;Process the choice of taking T and the choice of taking F
+        ((atom clause) (list clause)) ; there is only one clause 
         (t (go-through-branches clause symbol n (iterate-through-branch symbol clause) (iterate-through-branch (- symbol) clause)))
+    	; try parsing t/f assignment of branches through children fx 
     )
 )
 
-(defun prune-branch (symbol n T_branch temp_T_val)
-  (cond ((or (null T_branch) (null temp_T_val)) nil)
-        ((atom T_branch) (list symbol))
-        (t (append (list symbol) temp_T_val))
-      )
-)
-
+; continue parsing & pruning 
 (defun null-branch-parse (temp_T_val T_branch symbol)
-  (cond ((null T_branch) nil)
-      (t (cond ((atom T_branch) (list symbol))
+  (cond ((null T_branch) nil) ; precondition checks 
+      (t (cond ((atom T_branch) (list symbol)) ; append the last one 
              (t (cond ((null temp_T_val) nil)
-                  (t (append (list symbol) temp_T_val))
+                  (t (append (list symbol) temp_T_val)) ; otherwise add to branch 
                 )
              )
 
@@ -146,46 +146,52 @@
   )
 )
 
+; this does the actual iterating through branch 
 (defun go-through-branches (clause symbol n T_branch F_branch)
     (if (null F_branch)
-      (null-branch-parse (SAT-parser T_branch (+ symbol 1) n) T_branch symbol) 
-      (null-branch-parse2 F_branch (SAT-parser F_branch (+ symbol 1) n) (SAT-parser T_branch (+ symbol 1) n)symbol)
+      (null-branch-parse (SAT-parser T_branch (+ symbol 1) n) T_branch symbol) ; true branch 
+      (null-branch-parse2 F_branch (SAT-parser F_branch (+ symbol 1) n) (SAT-parser T_branch (+ symbol 1) n)symbol) ; false branch 
          
   )
 )
 
+; parse the false branch 
 (defun null-branch-parse2 (F_branch temp_F_val temp_T_val symbol)
-  (cond ((atom F_branch)(list (- symbol)))
+  (cond ((atom F_branch)(list (- symbol))) ; last item add 
   		(t (cond ((null temp_F_val) (cond ((null temp_T_val) nil)
-  									 (t (append (list symbol) temp_T_val)))
+  									 (t (append (list symbol) temp_T_val))) ; add to branch if not nil 
   								) 
-  				  (t (append (list (- symbol)) temp_F_val))
+  				  (t (append (list (- symbol)) temp_F_val)) ; add false 
   		   )
   		)
   )
 )
 
-(defun sat? (n delta)
-	(if (= n 0) 
+; original function given, calls all children function 
+(defun sat? (n delta) 
+	(if (= n 0) ; data validation 
 		nil 
-		(solve-sat? n 1 delta)
+		(solve-sat? n 1 delta) ; validated, pass to children 
 	)
 )
 
+; child function to aggregate answer 
 (defun solve-sat? (n num delta)
-	(do-work (SAT-parser delta num n) n)
+	(do-work (SAT-parser delta num n) n) ; pass to child 
 )
 
+; cumulate the solution + keep appending it 
 (defun do-work (sol_so_far n)
 	(if (null-checker sol_so_far)
 		nil 
-		(do-work-2 sol_so_far (- n (length sol_so_far)))
+		(do-work-2 sol_so_far (- n (length sol_so_far))) ; pass to child with negative sym
 	)       
 
 )
 
+; parent to begin the parsing -> high level 
 (defun do-work-2 (sol_so_far num_still_to_parse)
-	(answer-generator sol_so_far num_still_to_parse)
+	(answer-generator sol_so_far num_still_to_parse) ; call child to parse 
 )
 
 (defun split-line (line)
