@@ -1,50 +1,56 @@
+; checks if what we are passing in still has anything to check
+; is used as a helper fx for many of the other fx
 (defun null-checker (delta)
   (if (= (length delta) 0) 
       t 
       nil)
 )
 
-(defun remove-element-function-parser (symbol clause fx-name)
-	(cond ((string= fx-name "prune-element") 
-						(if (null-checker clause) 
-						    nil
-						      (if (eq (car clause) symbol) 
-						        (remove-element-function-parser symbol (cdr clause) "prune-element")
-						        (append (list (car clause)) (remove-element-function-parser symbol (cdr clause) "prune-element"))
-						      )
-						  )
-						)
-		  ((string= fx-name "remove-element-top-level") 
-		  				(if (null-checker clause) 
-						    nil
-						    (append (list (remove-element-function-parser symbol (car clause) "prune-element"))
-						      		(remove-element-function-parser symbol (cdr clause)"remove-element-top-level"))
-						 )
-		  )
+; this is the parent function that will remove elements from the clauses as we parse them 
+(defun discard-symbol-function-parser (symbol clause fx-name)
+	(if (null-checker clause)
+		nil
+		(cond ((string= fx-name "prune-element") ; tries to prune symbol from the clause 
+		      (if (eq (car clause) symbol) ; match with first element
+		        (discard-symbol-function-parser symbol (cdr clause) "prune-element") 
+		        ; then remove it and continue with rest 
+		        (append (list (car clause)) (discard-symbol-function-parser symbol (cdr clause) "prune-element"))
+		      	; else keep and then do rest 
+		      ))
+							
+			  ((string= fx-name "discard-symbol-top-level") ; going through clauses 
+			    (append (list (discard-symbol-function-parser symbol (car clause) "prune-element")) ; call the sub function 
+			    (discard-symbol-function-parser symbol (cdr clause) "discard-symbol-top-level"))) ; plus do it for the rest of the clauses 
+		)
 	)
 )
 
+; checks to make sure the clause is still valid post-discarding
 (defun top_level_validity_parser (symbol clause type)
 	(cond ((string= "top-level-valid-check" type) 
 				(if (top_level_validity_parser symbol clause "clause-validity-check")
-			    (remove-element-function-parser symbol clause "remove-element-top-level")
+				; need to go one level deeper into clauses 
+			    (discard-symbol-function-parser symbol clause "discard-symbol-top-level")
+			    ; do the discarding 
 			    nil))
 		  ((string= "clause-validity-check" type) 
 		  		(if (null clause) 
 	    			T
-			    	(if (remove-element-function-parser symbol (car clause) "prune-element") 
-			      		(top_level_validity_parser symbol (cdr clause) "clause-validity-check")
+			    	(if (discard-symbol-function-parser symbol (car clause) "prune-element") ; if you can prune the element 
+			      		(top_level_validity_parser symbol (cdr clause) "clause-validity-check") 
+			      		; keep checking for the rest to see if the rest of clauses also still will be valid 
 			      		nil)	
   				))
 	)
 )
 
+; checks -> does a symbol exist in this clause? 
 (defun exists (symbol clause)
-  (if (null-checker clause) 
+  (if (null-checker clause) ; null clause 
     nil 
-    (if (= (first clause) symbol) 
+    (if (= (first clause) symbol) ; found symbol 
         t 
-        (exists symbol (rest clause))
+        (exists symbol (rest clause)) ; didn't find symbol, keep checking 
     )
   )
 )
@@ -77,8 +83,11 @@
 )
 
 (defun begin-removal (symbol neg_symbol clause remove-pos-sym remove-neg-sym)
-	 (if (and (equal remove-pos-sym clause) (equal remove-neg-sym clause)) 
-	 	 clause
+	 (if (equal remove-pos-sym clause) 
+	 	 (if (equal remove-neg-sym clause)
+	 	 	clause
+	 	 	(top_level_validity_parser neg_symbol remove-pos-sym "top-level-valid-check")
+	 	 ) 
          (top_level_validity_parser neg_symbol remove-pos-sym "top-level-valid-check")
       )  
 )
@@ -94,21 +103,21 @@
   )
 )
 
-(defun smart-DFS-prechecks (clause symbol n)
+(defun SAT-parser-prechecks (clause symbol n)
   (if (or (null clause) (> symbol n))
     t
     nil)
 ) 
 
-(defun populate-sol (cur_sol vars_remaining)
+(defun answer-generator (cur_sol vars_remaining)
   (if (= vars_remaining 0) 
     cur_sol
-    (populate-sol (append cur_sol (list (+ (length cur_sol) 1))) (- vars_remaining 1))
+    (answer-generator (append cur_sol (list (+ (length cur_sol) 1))) (- vars_remaining 1))
   )
 )
 
-(defun smart-DFS (clause symbol n)
-    (cond ((smart-DFS-prechecks clause symbol n) nil)
+(defun SAT-parser (clause symbol n)
+    (cond ((SAT-parser-prechecks clause symbol n) nil)
 
         ;We've reached a single clause
         ((atom clause) (list clause))
@@ -117,18 +126,18 @@
     )
 )
 
-(defun prune-branch (symbol n T_branch assnT)
-  (cond ((or (null T_branch) (null assnT)) nil)
+(defun prune-branch (symbol n T_branch temp_T_val)
+  (cond ((or (null T_branch) (null temp_T_val)) nil)
         ((atom T_branch) (list symbol))
-      (t (append (list symbol) assnT))
+        (t (append (list symbol) temp_T_val))
       )
 )
 
-(defun null-branch-parse (assnT T_branch symbol)
+(defun null-branch-parse (temp_T_val T_branch symbol)
   (cond ((null T_branch) nil)
       (t (cond ((atom T_branch) (list symbol))
-             (t (cond ((null assnT) nil)
-                  (t (append (list symbol) assnT))
+             (t (cond ((null temp_T_val) nil)
+                  (t (append (list symbol) temp_T_val))
                 )
              )
 
@@ -139,18 +148,18 @@
 
 (defun go-through-branches (clause symbol n T_branch F_branch)
     (if (null F_branch)
-      (null-branch-parse (smart-DFS T_branch (+ symbol 1) n) T_branch symbol) 
-      (null-branch-parse2 F_branch (smart-DFS F_branch (+ symbol 1) n) (smart-DFS T_branch (+ symbol 1) n)symbol)
+      (null-branch-parse (SAT-parser T_branch (+ symbol 1) n) T_branch symbol) 
+      (null-branch-parse2 F_branch (SAT-parser F_branch (+ symbol 1) n) (SAT-parser T_branch (+ symbol 1) n)symbol)
          
   )
 )
 
-(defun null-branch-parse2 (F_branch assnF assnT symbol)
+(defun null-branch-parse2 (F_branch temp_F_val temp_T_val symbol)
   (cond ((atom F_branch)(list (- symbol)))
-  		(t (cond ((null assnF) (cond ((null assnT) nil)
-  									 (t (append (list symbol) assnT)))
+  		(t (cond ((null temp_F_val) (cond ((null temp_T_val) nil)
+  									 (t (append (list symbol) temp_T_val)))
   								) 
-  				  (t (append (list (- symbol)) assnF))
+  				  (t (append (list (- symbol)) temp_F_val))
   		   )
   		)
   )
@@ -159,25 +168,24 @@
 (defun sat? (n delta)
 	(if (= n 0) 
 		nil 
-		(process-solution n 1 delta)
+		(solve-sat? n 1 delta)
 	)
 )
 
-(defun process-solution (n init delta)
-	(do-work (smart-DFS delta init n) n)
+(defun solve-sat? (n num delta)
+	(do-work (SAT-parser delta num n) n)
 )
 
-(defun do-work (pre_proc_sol n)
-	
-	(if (null-checker pre_proc_sol)
+(defun do-work (sol_so_far n)
+	(if (null-checker sol_so_far)
 		nil 
-		(do-work-2 pre_proc_sol (- n (length pre_proc_sol)))
+		(do-work-2 sol_so_far (- n (length sol_so_far)))
 	)       
 
 )
 
-(defun do-work-2 (pre_proc_sol num_remaining)
-	(populate-sol pre_proc_sol num_remaining)
+(defun do-work-2 (sol_so_far num_still_to_parse)
+	(answer-generator sol_so_far num_still_to_parse)
 )
 
 (defun split-line (line)
