@@ -9,7 +9,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 ; General util.
 ;
-
 (defun reload()
   (load "hw6.lsp")
   );end defun
@@ -93,10 +92,6 @@
   )
 )
 
-; EXERCISE: Fill this function
-; returns *a list of clauses* to ensure that
-; "node n gets exactly one color from the set {1,2,...,k}."
-;
 
 ; EXERCISE: Fill this function
 ; returns *a list of clauses* to ensure that
@@ -106,11 +101,6 @@
     (append (list (at-least-one-color n 1 k)) ; concatenate result from at-least-one-color
       (at-most-one-color n 1 k)) ; with result from at-most-one-color
 )
-; EXERCISE: Fill this function
-; returns *a list of clauses* to ensure that
-; "the nodes at both ends of edge e cannot have the same color from the set {1,2,...,k}."
-;
-
 
 (defun format_generate_edge_clauses_p1 (e c k)
   (let* ((node_to_var_first (* (node2var (first e) c k) -1)) ; separate elements 
