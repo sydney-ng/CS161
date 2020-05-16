@@ -38,26 +38,26 @@
       nil ; return false if it does 
       (if (= c k) 
           (list (node2var n k k)) ; done -> return last index 
-          (append (list (node2var n c k)) (at-least-one-color n (+ c 1) k)) ; get index, go onto next 
+          (append (list (node2var n c k)) (at-least-one-color n (+ 1 c) k)) ; get index, go onto next 
       )
 
   )
 )
 
 (defun negate (val)
-   (* -1 val)
+   (* -1 val) ; returns the negation 
 )
 
 (defun make_list (x y)
-  (list (list x y))
+  (list (list x y)) ; makes list of list 
 ) 
 
 (defun return_conjunction (n k)
-  (let (x (* n k)) (make_list x (negate x)))
+  (let (x (* n k)) (make_list x (negate x))) ; returns conjunction 
 )
 
 (defun at-most-one-color (n c k)
-    (if (nil_checker k c)
+    (if (nil_checker k c) ; precondition checker 
         nil
         (continue-at-most-one-color n c k (at-least-one-color n c k)) 
     )
@@ -66,30 +66,30 @@
 (defun continue-at-most-one-color (n c k clause)
   (if (equal k c) 
       (return_conjunction n k)
-      (get-one-at-most clause)
+      (continue-at-most-one-color-helper clause)
   )
 )
 
-(defun get-one-at-most (s)
-  (if (nil_checker (length s) 1)
-      nil 
-      (append (separate_clause_before_parsing s) 
-               (get-one-at-most (cdr s)))
+(defun continue-at-most-one-color-helper (s)
+  (if (nil_checker (length s) 1) ; precondition checker 
+      nil ; return false 
+      (append (separate_clause_before_parsing s) ; concatenate first level
+               (continue-at-most-one-color-helper (cdr s))) ; recurse through rest 
   )   
 )
 
 (defun separate_clause_before_parsing (s)
-  (let* ((neg_c_head (negate (car s))) 
+  (let* ((neg_c_head (negate (car s))) ; separate head and tail 
          (c_rest (cdr s))) 
-    (permutation-one-at-most neg_c_head c_rest)
+    (continue-at-most-one-color-helper-2 neg_c_head c_rest) ; pass head and tail to child fx 
   ) 
 ) 
 
-(defun permutation-one-at-most(a b)
-  (if (nil_checker (length b) 1) 
+(defun continue-at-most-one-color-helper-2(a b)
+  (if (nil_checker (length b) 1) ; precondition checker 
       nil
-     (append (make_list a (negate (car b)))
-             (permutation-one-at-most a (cdr b)))
+     (append (make_list a (negate (car b))) ; list the first elements together 
+             (continue-at-most-one-color-helper-2 a (cdr b))) ; recurse through rest 
   )
 )
 
@@ -103,7 +103,8 @@
 ; "node n gets exactly one color from the set {1,2,...,k}."
 ;
 (defun generate-node-clauses (n k)
-    (append (list (at-least-one-color n 1 k)) (at-most-one-color n 1 k))
+    (append (list (at-least-one-color n 1 k)) ; concatenate result from at-least-one-color
+      (at-most-one-color n 1 k)) ; with result from at-most-one-color
 )
 ; EXERCISE: Fill this function
 ; returns *a list of clauses* to ensure that
@@ -112,18 +113,18 @@
 
 
 (defun format_generate_edge_clauses_p1 (e c k)
-
-  (let* ((node_to_var_first (* (node2var (first e) c k) -1)) 
+  (let* ((node_to_var_first (* (node2var (first e) c k) -1)) ; separate elements 
          (node_to_var_sec (* (node2var (second e) c k) -1)))
-    (make_list node_to_var_first node_to_var_sec)
+    (make_list node_to_var_first node_to_var_sec) ; concatenate them into list 
  )
 ) 
 
 (defun child-fx-generate-edge-clause (e c k)
   (if 
-    (nil_checker k c) 
+    (nil_checker k c) ; precondition checker 
       nil
-    (append (format_generate_edge_clauses_p1 e c k) (child-fx-generate-edge-clause e (+ c 1) k))
+    (append (format_generate_edge_clauses_p1 e c k) ; format first part 
+      (child-fx-generate-edge-clause e (+ 1 c) k)) ; recurse through rest 
   )
 )
 
@@ -132,7 +133,7 @@
 ; "the nodes at both ends of edge e cannot have the same color from the set {1,2,...,k}."
 ;
 (defun generate-edge-clauses (e k)
-  (child-fx-generate-edge-clause e 1 k)
+  (child-fx-generate-edge-clause e 1 k) ; send to child fx 
 )
 
 

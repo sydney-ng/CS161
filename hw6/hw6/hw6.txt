@@ -1,0 +1,90 @@
+CS 161- Homework 6
+Question 1: 
+Problem 9.4 from the text (which we repeat here for those who do not have the text). For each pair of atomic sentences, give the most general unifier if it exists:  (a) P(A, A, B), P(x, y, z).
+{x/A, y/B, z/B}
+(b) Q(y, G(A, B)), Q(G(x, x), y).
+This can’t be unified, as x can’t be mapped to two distinct values to get (A, B). 
+(c) R(x,A,z) , R(B,y,z). 	{x/B, y/A, z/C}
+	Note: z can be mapped to any value  (d) Older (Father(y), y), Older (Father(x), John).
+	{x/John, y/John}
+ (e) Knows (Father(y),y), Knows (x,x).  	This can’t be unified, as x can’t be mapped to both Father(y) and y.
+Question 2: 
+	Consider the following sentences: 
+	•	John likes all kinds of food. 
+	•	Apples are food.
+	•	Chicken is food.
+	•	Anything someone eats and isn’t killed by is food.
+	•	If you are killed by something, you are not alive.
+	•	Bill eats peanuts and is still alive. * 
+	•	Sue eats everything Bill eats. 
+
+Translate these sentences into formulas in first-order logic.
+	•	 John likes all kinds of food.
+		∀x (Food (x) => Likes (John, x))
+	•	Apples are food.
+		Food (Apples)
+	•	Chicken is food.
+		Food (Chicken)
+	•	Anything someone eats and isn’t killed by is food.
+		∀x ∀y (Eats (y, x) ^ ¬ Kill (y, x)) => Food (x))
+	•	If you are killed by something, you are not alive.
+		∀x ∃y (Kill (y, x) => (¬ Alive (x)))  
+	•	Bill eats peanuts and is still alive. * 
+		Eats (Bill, peanuts) ^ Alive (Bill) 
+	•	Sue eats everything Bill eats.
+		∀x ( Eats (Bill, x) => (Eats (Sue, x)) 
+(b) Convert the formulas of part (a) into CNF (also called clausal form).
+	•	 John likes all kinds of food.
+		(¬  Food (x) v Likes (John, x))	
+	•	Apples are food.
+		Food (Apples)
+	•	Chicken is food.
+		Food (Chicken)
+	•	Anything someone eats and isn’t killed by is food.
+		(¬ Eats (x, y)) v (Killed (y, x)) v (Food (y))
+	•	If you are killed by something, you are not alive.
+		(¬ Killed (y, x)) v (¬Alive (x))
+	•	Bill eats peanuts and is still alive. * 
+		Eats (Bill, peanuts),  Alive (Bill) 
+	•	Sue eats everything Bill eats.
+		(¬Eats (Bill, x)) v (Eats (Sue, x)) 
+(c) Prove that John likes peanuts using resolution.
+Prove: Likes (John, peanuts)
+
+
+(d) Use resolution to answer the question, “What does Sue eat?”
+Query: Eats (Sue, z)
+Answer: Eats (Sue, peanuts)
+
+
+
+(e) Use resolution to answer (d) if, instead of the axiom marked with an asterisk above, we had:  
+	•	If you don’t eat, you die. 
+		FOL: ∀x ∀y (¬ Eats(y, x) => Die(y)) CNF: (Eats(y, x)) v (Die(y))
+	•	If you die, you are not alive.  FOL: ∀x (Die (x) => ¬ Alive(x)) CNF: (¬Die(x)) v (¬ Alive(x))
+	•	Bill is alive.  FOL: Alive (Bill) CNF: Alive (Bill)
+Query: Eats (Sue, z)
+Answer: Eats (Sue, z) where z = any value
+
+
+
+Question 3:
+Download the RSat SAT solver from (http://reasoning.cs.ucla.edu/rsat/). Read the manual carefully. Use RSat to solve the SAT instance obtained above. Is the instance satisfiable?          No, this is not satisfiable. 
+Do the conversion again, this time, with 4 colors. Use RSat to solve this new SAT instance. Is the instance satisfiable?
+No, this is not satisfiable. 
+What do the answers of these two SAT instances tell you about the graph coloring problem of the above graph? Can you give a solution (a coloring) to the graph coloring problem of the above graph based on the results of RSat? 
+	This tells us that 4 is the minimum number of colors that is needed to solve this problem.
+            Possible Solution for Graph 1:
+		   N       C
+  1       1
+  2       2
+  3       1
+  4       4
+  5       3
+  6       2
+  7       3   		
+Now, use a similar approach to solve the graph coloring of the graph described in graph2.txt. What is the minimum number of colors required to properly color this graph? 
+The minimum number is 8.
+
+
+
